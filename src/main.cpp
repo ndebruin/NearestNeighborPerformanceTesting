@@ -10,12 +10,12 @@
 
 NNAlgorithms nnAlgorithm;
 
-uint16_t* getTestValue(uint64_t index);
+Vector getTestValue(uint32_t index);
 
 void runTest(){
-  for(uint64_t i = 0; i<testValueCount; i++){
+  for(uint32_t i = 0; i<testValueCount; i++){
     uint32_t startTime = micros();
-    uint64_t guessedIndex = nnAlgorithm.getClosestIndex(getTestValue(i));
+    uint32_t guessedIndex = nnAlgorithm.getClosestIndex(getTestValue(i));
     uint32_t timeTaken = micros() - startTime;
 
     bool correct = false;
@@ -61,13 +61,13 @@ void setup() {
 
   runTest();
 
-
   // fourth test: k-d tree search with standard euclidian distance
   SERIALPORT.println("K-D Tree Search - Euclidian Distance");
   nnAlgorithm.setSearchAlgorithm(kdTree);
   nnAlgorithm.setDistanceFunctionFloat(euclidianDistance);
 
-  nnAlgorithm.buildTree(); // reset and rebuild the tree with the new distance function
+  nnAlgorithm.clearTree(); // reset the tree
+  nnAlgorithm.buildTree(); // build the tree with the new distance function
 
   runTest();
 
@@ -76,7 +76,8 @@ void setup() {
   nnAlgorithm.setSearchAlgorithm(kdTree);
   nnAlgorithm.setDistanceFunctionInt(squaredEuclidianDistance);
 
-  nnAlgorithm.buildTree(); // reset and rebuild the tree with the new distance function
+  nnAlgorithm.clearTree(); // reset the tree
+  nnAlgorithm.buildTree(); // build the tree with the new distance function
 
   runTest();
 
@@ -85,7 +86,8 @@ void setup() {
   nnAlgorithm.setSearchAlgorithm(kdTree);
   nnAlgorithm.setDistanceFunctionInt(manhattanDistance);
 
-  nnAlgorithm.buildTree(); // reset and rebuild the tree with the new distance function
+  nnAlgorithm.clearTree(); // reset the tree
+  nnAlgorithm.buildTree(); // build the tree with the new distance function
 
   runTest();
 
