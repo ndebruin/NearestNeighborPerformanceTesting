@@ -12,7 +12,9 @@ NNAlgorithms nnAlgorithm;
 
 Vector getTestValue(uint32_t index);
 
-void runTest(){
+// check all the datapoints
+void runDataPointsTest(){
+  SERIALPORT.println("Running over all datapoints");
   for(uint32_t i = 0; i<testValueCount; i++){
     uint32_t startTime = micros();
     uint32_t guessedIndex = nnAlgorithm.getClosestIndex(getTestValue(i));
@@ -23,7 +25,26 @@ void runTest(){
       correct = true;
     }
 
-    SERIALPORT.printf("%lu,%d,%.2f,%.2f\n",timeTaken, correct, outputData[2*i + 0], outputData[2*i + 1]); // access is slightly weird bc it's a 1d array that's conceptually 2d
+    SERIALPORT.printf("%lu,%d,%.2f,%.2f\n",timeTaken, correct, outputData[2*guessedIndex + 0], outputData[2*guessedIndex + 1]); // access is slightly weird bc it's a 1d array that's conceptually 2d
+    // we can get the true angle measurements through code run on the desktop when we get the data
+  }
+}
+
+// check the same datapoint over and over to see if the algorithim will sometimes get different results
+void runConsistencyTest(){
+  SERIALPORT.printf("Checking datapoint %u repeatedly.",consistencyIndex);
+
+  for(uint32_t i = 0; i<consistencyTestCount; i++){
+    uint32_t startTime = micros();
+    uint32_t guessedIndex = nnAlgorithm.getClosestIndex(getTestValue(consistencyIndex));
+    uint32_t timeTaken = micros() - startTime;
+
+    bool correct = false;
+    if(guessedIndex == realIndexes[consistencyIndex]){
+      correct = true;
+    }
+
+    SERIALPORT.printf("%lu,%d,%.2f,%.2f\n",timeTaken, correct, outputData[2*guessedIndex + 0], outputData[2*guessedIndex + 1]); // access is slightly weird bc it's a 1d array that's conceptually 2d
     // we can get the true angle measurements through code run on the desktop when we get the data
   }
 }
@@ -45,21 +66,24 @@ void setup() {
   nnAlgorithm.setSearchAlgorithm(LinearSearch);
   nnAlgorithm.setDistanceFunctionFloat(euclidianDistance);
 
-  runTest();
+  runDataPointsTest();
+  runConsistencyTest();
 
   // second test: linear search with squared euclidian distance
   SERIALPORT.println("Linear Search - Squared Euclidian Distance");
   nnAlgorithm.setSearchAlgorithm(LinearSearch);
   nnAlgorithm.setDistanceFunctionInt(squaredEuclidianDistance);
 
-  runTest();
+  runDataPointsTest();
+  runConsistencyTest();
 
   // third test: linear search with manhattan distance
   SERIALPORT.println("Linear Search - Manhattan Distance");
   nnAlgorithm.setSearchAlgorithm(LinearSearch);
   nnAlgorithm.setDistanceFunctionInt(manhattanDistance);
 
-  runTest();
+  runDataPointsTest();
+  runConsistencyTest();
 
   // fourth test: k-d tree search with standard euclidian distance
   SERIALPORT.println("K-D Tree Search - Euclidian Distance");
@@ -69,7 +93,8 @@ void setup() {
   nnAlgorithm.clearTree(); // reset the tree
   nnAlgorithm.buildTree(); // build the tree with the new distance function
 
-  runTest();
+  runDataPointsTest();
+  runConsistencyTest();
 
   // fifth test: k-d tree search with squared euclidian distance
   SERIALPORT.println("K-D Tree Search - Squared Euclidian Distance");
@@ -79,7 +104,8 @@ void setup() {
   nnAlgorithm.clearTree(); // reset the tree
   nnAlgorithm.buildTree(); // build the tree with the new distance function
 
-  runTest();
+  runDataPointsTest();
+  runConsistencyTest();
 
   // sixth test: k-d tree search with manhattan distance
   SERIALPORT.println("K-D Tree Search - Manhattan Distance");
@@ -89,7 +115,8 @@ void setup() {
   nnAlgorithm.clearTree(); // reset the tree
   nnAlgorithm.buildTree(); // build the tree with the new distance function
 
-  runTest();
+  runDataPointsTest();
+  runConsistencyTest();
 
   SERIALPORT.println("This concludes the performance testing.");
   SERIALPORT.println("Please send ALL the serial data to Nic DeBruin on Slack, along with the details of your tested microcontroller, including clockspeed and any other performance options.");
