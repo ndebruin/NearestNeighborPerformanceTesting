@@ -2,16 +2,19 @@
 #define NNALGORITHMS_h
 
 #include <Arduino.h>
-#include <limits>
 
 // this is really just a pointer to the first dimension of the vector,
 // but using the Vector keyword makes things more understandable imo
 // it allows you to look and understand the logic without needing to look at the programming as much
 typedef const uint16_t* Vector; 
 
-
 typedef uint32_t (*DistanceFunctionInt)(uint8_t dimensions, Vector v1, Vector v2);
 typedef float (*DistanceFunctionFloat)(uint8_t dimensions, Vector v1, Vector v2);
+
+uint32_t squaredEuclidianDistance(uint8_t dimensions, Vector v1, Vector v2);
+float euclidianDistance(uint8_t dimensions, Vector v1, Vector v2);
+uint32_t manhattanDistance(uint8_t dimensions, Vector v1, Vector v2);
+
 
 enum SearchAlgorithm{
     LinearSearch = 0,
@@ -31,7 +34,7 @@ struct kdTreeNode{
 class NNAlgorithms
 {
     public:
-        NNAlgorithms();
+        NNAlgorithms(){}
         void setDimensionality(uint8_t dimensions){ k = dimensions; }
         void setDatasetSize(uint32_t DatasetSize){ datasetSize = DatasetSize; }
         void setDataset(const uint16_t *dataset){ datasetPointer = dataset; }
@@ -91,27 +94,6 @@ class NNAlgorithms
             return (getDatasetEntry(base)[dimension] < getDatasetEntry(comparision)[dimension]);
         }
 };
-
-uint32_t squaredEuclidianDistance(uint8_t dimensions, Vector v1, Vector v2){
-    uint32_t squaredDist = 0;
-    for(int i = 0; i<dimensions; i++){
-        int32_t diff = static_cast<int32_t>(v1[i]) - static_cast<int32_t>(v2[i]);
-        squaredDist += diff * diff;
-    }
-    return squaredDist;
-}
-
-float euclidianDistance(uint8_t dimensions, Vector v1, Vector v2){
-    return sqrtf(squaredEuclidianDistance(dimensions, v1, v2));
-}
-
-uint32_t manhattanDistance(uint8_t dimensions, Vector v1, Vector v2){
-    uint32_t dist = 0;
-    for (uint32_t i = 0; i < dimensions; ++i) {
-        dist += abs(static_cast<int32_t>(v1[i]) - static_cast<int32_t>(v2[i]));
-    }
-    return dist;
-}
 
 
 

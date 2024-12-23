@@ -1,5 +1,26 @@
 #include "NNAlgorithms.h"
 
+uint32_t squaredEuclidianDistance(uint8_t dimensions, Vector v1, Vector v2){
+    uint32_t squaredDist = 0;
+    for(int i = 0; i<dimensions; i++){
+        int32_t diff = static_cast<int32_t>(v1[i]) - static_cast<int32_t>(v2[i]);
+        squaredDist += diff * diff;
+    }
+    return squaredDist;
+}
+
+float euclidianDistance(uint8_t dimensions, Vector v1, Vector v2){
+    return sqrtf(squaredEuclidianDistance(dimensions, v1, v2));
+}
+
+uint32_t manhattanDistance(uint8_t dimensions, Vector v1, Vector v2){
+    uint32_t dist = 0;
+    for (uint32_t i = 0; i < dimensions; ++i) {
+        dist += abs(static_cast<int32_t>(v1[i]) - static_cast<int32_t>(v2[i]));
+    }
+    return dist;
+}
+
 Vector NNAlgorithms::getDatasetEntry(uint32_t index){
     uint32_t startIndex = index * k; // this is an artifact of the fact that were storing "2d" data in a 1d array.
     return &datasetPointer[startIndex];

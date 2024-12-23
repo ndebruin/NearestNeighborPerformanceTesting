@@ -1,16 +1,19 @@
 #include <Arduino.h>
+
+#include "NNAlgorithms.h"
+
+
 #include "CICalibrationValues.h"
 #include "CIAngleValues.h"
 #include "CITestValues.h"
-
-#include "NNAlgorithms.h"
+#include "TestIndexes.h"
 
 // if your platform using something other than the default Serial for the USB serial connection, please replace it here
 #define SERIALPORT Serial
 
 NNAlgorithms nnAlgorithm;
 
-Vector getTestValue(uint32_t index);
+
 
 // check all the datapoints
 void runDataPointsTest(){

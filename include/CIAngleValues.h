@@ -1,4 +1,4 @@
-// Data generated with Matlab
+// Auto-generated header file
 #ifndef OUTPUTDATA_H
 #define OUTPUTDATA_H
 
