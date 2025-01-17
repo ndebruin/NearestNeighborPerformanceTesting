@@ -52,18 +52,7 @@ void runConsistencyTest(){
   }
 }
 
-
-void setup() {
-  SERIALPORT.begin(115200); // begin USB serial connection
-
-  SERIALPORT.println("Welcome to the Nearest Neighbor Performance Test Program. Press any key to begin.");
-
-  while(SERIALPORT.available() == 0){}; // tight loop that works crossplatform to wait to begin program
-
-  nnAlgorithm.setDimensionality(5);
-  nnAlgorithm.setDatasetSize(sizeof(calibrationData) / sizeof(calibrationData[0]));
-  nnAlgorithm.setDataset(calibrationData); 
-
+void runLinearSeachTests(){
   // first test: linear search with standard euclidian distance
   SERIALPORT.println("Linear Search - Euclidian Distance");
   nnAlgorithm.setSearchAlgorithm(LinearSearch);
@@ -87,14 +76,41 @@ void setup() {
 
   runDataPointsTest();
   runConsistencyTest();
+}
+
+
+void setup() {
+  SERIALPORT.begin(9600); // begin USB serial connection
+
+  SERIALPORT.println("Welcome to the Nearest Neighbor Performance Test Program. Press any key to begin.");
+
+  while(SERIALPORT.available() == 0){}; // tight loop that works crossplatform to wait to begin program
+
+  uint8_t dimensions = 5;
+
+  nnAlgorithm.setDimensionality(dimensions);
+  nnAlgorithm.setDatasetSize(sizeof(calibrationData) / sizeof(calibrationData[0]) / dimensions);
+
+  // SERIALPORT.println(sizeof(calibrationData) / sizeof(calibrationData[0]) / dimensions);
+  nnAlgorithm.setDataset(calibrationData); 
+
+  // runLinearSeachTests();
 
   // fourth test: k-d tree search with standard euclidian distance
   SERIALPORT.println("K-D Tree Search - Euclidian Distance");
   nnAlgorithm.setSearchAlgorithm(kdTree);
   nnAlgorithm.setDistanceFunctionFloat(euclidianDistance);
 
+  SERIALPORT.println("building tree");
+
   nnAlgorithm.clearTree(); // reset the tree
+  SERIALPORT.println("tree cleared");
+
+  // SERIALPORT.println( ESP.getMaxAllocHeap());
+
   nnAlgorithm.buildTree(); // build the tree with the new distance function
+
+  SERIALPORT.println("tree built!");
 
   runDataPointsTest();
   runConsistencyTest();

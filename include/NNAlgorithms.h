@@ -25,7 +25,7 @@ enum SearchAlgorithm{
 // tree data struct. we only store the index to the place in the dataset, to save memory
 // storing the actually data in the struct would end up duplicating the dataset into SRAM, rather than keeping it in PROGRAM
 struct kdTreeNode{
-    uint32_t index;
+    uint16_t index;
     kdTreeNode* left;
     kdTreeNode* right;
 };
@@ -51,19 +51,19 @@ class NNAlgorithms
         void clearTree();
 
         // this will return the index of the nearest neighbor to the supplied vector given the distance function and search algorithm chosen
-        uint32_t getClosestIndex(Vector v); 
+        uint16_t getClosestIndex(Vector v); 
 
 
     private:
-        uint32_t linearSearch(Vector v);
-        uint32_t kdSearch(Vector v);
+        uint16_t linearSearch(Vector v);
+        uint16_t kdSearch(Vector v);
 
         const uint16_t *datasetPointer;
 
-        Vector getDatasetEntry(uint32_t index);
+        Vector getDatasetEntry(uint16_t index);
 
         uint8_t k; // dimensions
-        uint32_t datasetSize;
+        uint16_t datasetSize;
 
         SearchAlgorithm searchAlgo;
 
@@ -74,23 +74,23 @@ class NNAlgorithms
         // k-d tree specific stuff
         kdTreeNode* rootNode = nullptr;
 
-        void searchNode(kdTreeNode* node, Vector searchVector, uint32_t& bestIndex, uint32_t& bestDistanceInt, float& bestDistanceFloat, uint32_t depth);
+        void searchNode(kdTreeNode* node, Vector searchVector, uint16_t& bestIndex, uint32_t& bestDistanceInt, float& bestDistanceFloat, uint32_t depth);
 
         /* this is a little confusing. 
         the data itself is uint16_t.
-        however, the index in the dataset is stored in a uint32_t.
+        however, the index in the dataset is stored in a uint32_t. (uint16_t bc esp32 ram is low)
         this is an array of the indices of the array, that will be reorganized as part of creating the k-d tree.        
         hence, the name indexMap
         */
-        uint32_t* indexMap;
+        uint16_t* indexMap;
 
         // creating the k-d tree is a recursive process, this is our recursive function for creating the tree
-        kdTreeNode* buildKDTree(uint32_t startIndex, uint32_t endIndex, uint32_t depth);
+        kdTreeNode* buildKDTree(uint16_t startIndex, uint16_t endIndex, uint32_t depth);
 
         void deleteKDNode(kdTreeNode* node);
 
         // compares two vectors upon a specified dimension. used for k-d tree
-        bool greaterThanInDimension(const uint32_t& comparision, const uint32_t& base, uint8_t dimension){
+        bool greaterThanInDimension(const uint16_t& comparision, const uint16_t& base, uint8_t dimension){
             return (getDatasetEntry(base)[dimension] < getDatasetEntry(comparision)[dimension]);
         }
 };

@@ -21,7 +21,7 @@ uint32_t manhattanDistance(uint8_t dimensions, Vector v1, Vector v2){
     return dist;
 }
 
-Vector NNAlgorithms::getDatasetEntry(uint32_t index){
+Vector NNAlgorithms::getDatasetEntry(uint16_t index){
     uint32_t startIndex = index * k; // this is an artifact of the fact that were storing "2d" data in a 1d array.
     return &datasetPointer[startIndex];
 }
@@ -38,7 +38,7 @@ void NNAlgorithms::setDistanceFunctionFloat(DistanceFunctionFloat distanceFuncti
     useFloatsForDistance = true;
 }
 
-uint32_t NNAlgorithms::getClosestIndex(Vector v){
+uint16_t NNAlgorithms::getClosestIndex(Vector v){
     if(searchAlgo == LinearSearch){ 
         return linearSearch(v);
     }
@@ -49,7 +49,7 @@ uint32_t NNAlgorithms::getClosestIndex(Vector v){
     return 0;
 }
 
-uint32_t NNAlgorithms::linearSearch(Vector v){ // simplest search algo
+uint16_t NNAlgorithms::linearSearch(Vector v){ // simplest search algo
     uint32_t currentLowestIndex = 0;
 
     if(useFloatsForDistance){
@@ -60,6 +60,7 @@ uint32_t NNAlgorithms::linearSearch(Vector v){ // simplest search algo
             float distance = distanceFuncFloat(k, v, getDatasetEntry(i));
             if(distance < lowestDistance){
                 currentLowestIndex = i;
+                lowestDistance = distance;
             }
         }
     }
@@ -72,6 +73,7 @@ uint32_t NNAlgorithms::linearSearch(Vector v){ // simplest search algo
             uint32_t distance = distanceFuncInt(k, v, getDatasetEntry(i));
             if(distance < lowestDistance){
                 currentLowestIndex = i;
+                lowestDistance = distance;
             }
         }
     }
@@ -82,10 +84,11 @@ uint32_t NNAlgorithms::linearSearch(Vector v){ // simplest search algo
 // k-d tree specific code
 
 void NNAlgorithms::buildTree(){
-    indexMap = (uint32_t*)malloc(datasetSize * sizeof(uint32_t)); // reserve memory for the entire index map
-    for (uint32_t i = 0; i < datasetSize; i++) {
+    indexMap = (uint16_t*)malloc(datasetSize * sizeof(uint16_t)); // reserve memory for the entire index map
+    for (uint16_t i = 0; i < datasetSize; i++) {
         indexMap[i] = i; // Fill the index map
     }
+    Serial.println("starting at root");
     rootNode = buildKDTree(0, datasetSize, 0); // start with the whole thing, an initial depth of zero
 }
 
@@ -102,11 +105,11 @@ void NNAlgorithms::clearTree(){
     indexMap = NULL;
 }
 
-kdTreeNode* NNAlgorithms::buildKDTree(uint32_t startIndex, uint32_t endIndex, uint32_t depth){
+kdTreeNode* NNAlgorithms::buildKDTree(uint16_t startIndex, uint16_t endIndex, uint32_t depth){
     if(startIndex >= endIndex) return nullptr; // safety thing
 
     uint32_t currentDimension = depth % k;
-    uint32_t middleIndex = (startIndex + endIndex) / 2;
+    uint16_t middleIndex = (startIndex + endIndex) / 2;
 
     // Sort indices based on the current dimension
     // this will place the median value at the middle index, 
@@ -117,19 +120,34 @@ kdTreeNode* NNAlgorithms::buildKDTree(uint32_t startIndex, uint32_t endIndex, ui
         return this->greaterThanInDimension(v1, v2, currentDimension);
     });
     
+    Serial.println( esp_get_free_heap_size());
+
     kdTreeNode* node = new kdTreeNode();
 
+    // Serial.print("building node with Depth: " + String(depth));
+    // Serial.println(" index: " + String(indexMap[middleIndex]));
+    
+
     node->index = indexMap[middleIndex];
+    // if(currentDimension == 0){
+    //     Serial.println("NODE LEFT SIDE " + String(depth));
+    // }
     // go from the start to the middle value, at one further depth
     node->left = buildKDTree(startIndex, middleIndex, depth+1); // it's the same function! recursive
     // go from just after the middle index to the end, at one further depth
+    // if(currentDimension == 0){
+    //     Serial.println("NODE RIGHT SIDE " + String(depth));
+    // }
+    // if(depth == 0){
+    //     Serial.println("ROOT NODE RIGHT SIDE");
+    // }
     node->right = buildKDTree(middleIndex+1, endIndex, depth +1); // it's the same function! recursive
     
     return node;
 }
 
-uint32_t NNAlgorithms::kdSearch(Vector v){
-    uint32_t bestIndex = 0;
+uint16_t NNAlgorithms::kdSearch(Vector v){
+    uint16_t bestIndex = 0;
     uint32_t bestDistanceInt = UINT32_MAX;
     float bestDistanceFloat = MAXFLOAT;
     searchNode(rootNode, v, bestIndex, bestDistanceInt, bestDistanceFloat, 0);
@@ -137,7 +155,7 @@ uint32_t NNAlgorithms::kdSearch(Vector v){
 }
 
 
-void NNAlgorithms::searchNode(kdTreeNode* node, Vector searchVector, uint32_t& bestIndex, uint32_t& bestDistanceInt, float& bestDistanceFloat, uint32_t depth){
+void NNAlgorithms::searchNode(kdTreeNode* node, Vector searchVector, uint16_t& bestIndex, uint32_t& bestDistanceInt, float& bestDistanceFloat, uint32_t depth){
     if(!node){ return; } // this saves us if it's a nullptr node (ex: end of a branch)
 
     Vector currentVector = getDatasetEntry(node->index);
